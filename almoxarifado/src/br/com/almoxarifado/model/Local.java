@@ -5,20 +5,23 @@ private int idLocal;
 private String prateleira;
 private String corredor;
 private String sala;
+private boolean usado;
 
-public Local(int idLocal, String prateleira, String corredor, String sala) {
+public Local(int idLocal, String prateleira, String corredor, String sala, boolean usado) {
 	super();
 	this.idLocal = idLocal;
 	this.prateleira = prateleira;
 	this.corredor = corredor;
 	this.sala = sala;
+	this.usado = usado;
 }
-public Local( String prateleira, String corredor, String sala) {
+public Local( String prateleira, String corredor, String sala, boolean usado) {
 	super();
 	
 	this.prateleira = prateleira;
 	this.corredor = corredor;
 	this.sala = sala;
+	this.usado = usado;
 }
 public int getIdLocal() {
 	return idLocal;
@@ -48,6 +51,12 @@ public void setSala(String sala) {
 public String toString() {
 	return "Local [idLocal=" + idLocal + ", prateleira=" + prateleira + ", corredor=" + corredor + ", sala=" + sala
 			+ "]";
+}
+public boolean isUsado() {
+	return usado;
+}
+public void setUsado(boolean usado) {
+	this.usado = usado;
 }
 
 }

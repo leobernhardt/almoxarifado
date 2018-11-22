@@ -15,7 +15,7 @@ public class GeraLog {
 			mensagemErro.append(erro.toString() + "#");
 		}
 		try {
-			Arquivo.gravaArquivo(System.getProperty("user.dir") + "/log/errosBanco.log", mensagemErro.toString(), true);
+			Arquivo.gravaArquivo(System.getProperty("user.dir") + "/log/erros.log", mensagemErro.toString(), true);
 		} catch (IOException e) {
 			System.out.println("Erro no arquivo de log...");
 		}

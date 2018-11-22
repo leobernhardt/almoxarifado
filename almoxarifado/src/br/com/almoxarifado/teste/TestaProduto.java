@@ -15,9 +15,10 @@ public class TestaProduto {
 
 	public static void main(String[] args) {
 		try {
-		//testeCadastroProduto();
+//		testeCadastroProduto();
 		//testeAlteraProduto();
-		testeExcluiProduto();
+//		testeExcluiProduto();
+			testeConsultaProduto();
 	} catch (ConexaoException | DAOException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -75,12 +76,22 @@ public class TestaProduto {
 	}
 
 	private static void testeCadastroProduto() throws ConexaoException, DAOException {
-		Produto produto = new Produto("piroca",  LocalDate.parse("2017-02-03"), LocalDate.parse("2018-02-03"), LocalDate.parse("2020-02-03"), "genitalha",retornaLocal().getIdLocal(), (float) 20.00);
+		Produto produto = new Produto("piroca", "2017-02-03","2018-02-03","2020-02-03", "genitalha",retornaLocal().getIdLocal(), (float) 20.00);
 		System.out.println(produto);		
 		ProdutoDAO produtoDAO = new ProdutoDAO();
 		
 			produtoDAO.insere(produto);
 		
+		
+	}
+	
+	private static void testeConsultaProduto() throws ConexaoException, DAOException {
+		ProdutoDAO produtoDAO = new ProdutoDAO();
+		
+			System.out.println(produtoDAO.consulta(7));
+		
+			// TODO Auto-generated catch block
+			
 		
 	}
 
