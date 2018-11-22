@@ -9,7 +9,9 @@ import br.com.almoxarifado.exceptions.DAOException;
 
 
 public interface ICRUDPadraoDAO<T> {
-
+	
+	public abstract T consulta(String parametro,String valor) throws ConexaoException, DAOException;
+	
 	public abstract T consulta(int codigo) throws ConexaoException, DAOException;
 
 	public abstract Map<Integer, T> consultaTodos() throws ConexaoException, DAOException;

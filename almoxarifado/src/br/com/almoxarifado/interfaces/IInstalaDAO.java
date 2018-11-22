@@ -6,4 +6,5 @@ import br.com.almoxarifado.exceptions.DAOException;
 public interface IInstalaDAO {
 	public abstract boolean criaTabela() throws ConexaoException, DAOException;
 	public abstract boolean excluiTabela() throws ConexaoException, DAOException;
+	
 }

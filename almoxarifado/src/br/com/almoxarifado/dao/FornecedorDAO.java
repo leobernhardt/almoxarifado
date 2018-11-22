@@ -258,4 +258,14 @@ public class FornecedorDAO implements IInstalaDAO, ICRUDPadraoDAO<Fornecedor> {
 	public boolean exclui(Fornecedor objeto) throws ConexaoException, DAOException {
 		return exclui(objeto.getIdFornecedor());
 	}
+
+	@Override
+	public Fornecedor consulta(String parametro, String valor) throws ConexaoException, DAOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
 }
+

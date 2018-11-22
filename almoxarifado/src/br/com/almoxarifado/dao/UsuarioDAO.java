@@ -18,7 +18,7 @@ import br.com.almoxarifado.interfaces.IInstalaDAO;
 import br.com.almoxarifado.model.Usuario;
 import br.com.almoxarifado.utils.Conexao;
 
-public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
+public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario>{
 
 	@Override
 	public boolean criaTabela() throws ConexaoException, DAOException {
@@ -67,10 +67,29 @@ public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
 			PreparedStatement pst = conexao.prepareStatement("SELECT * FROM usuario WHERE idFuncionario = ?;");
 			pst.setInt(1, idFuncionario);
 			ResultSet rs = pst.executeQuery();
-			return rs.first() ? new Usuario(rs.getInt("idFuncionario"),
-					   rs.getString("prateleira"),
-					   rs.getString("corredor"),
-					   rs.getString("sala"))
+			return rs.first() ? new Usuario(rs.getInt("idfuncionario"),
+					   rs.getString("login"),
+					   rs.getString("senha"),
+					   rs.getBoolean("adm"))
+					 		  : null;
+		} catch (Exception e) {
+			throw new DAOException(EErrosDAO.CONSULTA_DADO, e.getMessage(), this.getClass());
+		} finally {
+			Conexao.fechaConexao();
+		}
+		
+	}
+	@Override
+	public Usuario consulta(String parametro, String valor) throws ConexaoException, DAOException {
+		Connection conexao = Conexao.abreConexao();
+		try {
+			PreparedStatement pst = conexao.prepareStatement("SELECT * FROM usuario WHERE "+parametro+" = ?;");
+			pst.setString(1,valor);
+			ResultSet rs = pst.executeQuery();
+			return rs.first() ? new Usuario(rs.getInt("idfuncionario"),
+					   rs.getString("login"),
+					   rs.getString("senha"),
+					   rs.getBoolean("adm"))
 					 		  : null;
 		} catch (Exception e) {
 			throw new DAOException(EErrosDAO.CONSULTA_DADO, e.getMessage(), this.getClass());
@@ -78,6 +97,7 @@ public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
 			Conexao.fechaConexao();
 		}
 	}
+	
 
 	@Override
 	public Map<Integer, Usuario> consultaTodos() throws ConexaoException, DAOException {
@@ -88,9 +108,9 @@ public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
 			ResultSet rs = st.executeQuery("SELECT * FROM usuario;");
 			while(rs.next()) {
 				usuario.put(Integer.valueOf(rs.getInt("IdFuncionario")), new Usuario(rs.getInt("idFuncionario"),
-						rs.getString("prateleira"),
-						   rs.getString("corredor"),
-						   rs.getString("sala")));
+						   rs.getString("login"),
+						   rs.getString("senha"),
+						   rs.getBoolean("adm")));
 			}
 			return usuario;
 		} catch (Exception e) {
@@ -112,9 +132,9 @@ public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
 					ResultSet rs = pst.executeQuery();
 					if (rs.first()) {
 						usuario.add(new Usuario(rs.getInt("idFuncionario"),
-								rs.getString("prateleira"),
-								   rs.getString("corredor"),
-								   rs.getString("sala")));
+								   rs.getString("login"),
+								   rs.getString("senha"),
+								   rs.getBoolean("adm")));
 										
 					}
 				} catch (Exception c) {
@@ -134,10 +154,11 @@ public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
 		Connection conexao = Conexao.abreConexao();
 		try {
 			PreparedStatement pst = conexao.prepareStatement(
-					"INSERT INTO usuario (prateleira,corredor,sala) VALUES (?, ?, ?);");
-			pst.setString(1, objeto.getPrateleira());
-			pst.setString(2, objeto.getCorredor());
-			pst.setString(3, objeto.getSala());
+					"INSERT INTO usuario (idfuncionario,login,senha,adm) VALUES (?, ?, ?, ?);");
+			pst.setInt(1, objeto.getIdFuncionario());
+			pst.setString(2, objeto.getLogin());
+			pst.setString(3, objeto.getSenha());
+			pst.setBoolean(4, objeto.isAdm());
 			return pst.executeUpdate() > 0;
 		} catch (Exception e) {
 			throw new DAOException(EErrosDAO.INSERE_DADO, e.getMessage(), this.getClass());
@@ -157,15 +178,16 @@ public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
 		List<Usuario> falhados = new ArrayList<Usuario>();
 		try {
 			PreparedStatement pst = conexao.prepareStatement(
-					"INSERT INTO usuario (prateleira,corredor,sala) VALUES (?, ?, ?);");
-			for (Usuario Usuario : objetos) {
+					"INSERT INTO usuario (idFuncionario,login,senha,adm) VALUES (?, ?, ?, ?);");
+			for (Usuario usuario : objetos) {
 				try {
-					pst.setString(1, Usuario.getPrateleira());
-					pst.setString(2, Usuario.getCorredor());
-					pst.setString(3, Usuario.getSala());
+					pst.setInt(1, usuario.getIdFuncionario());
+					pst.setString(2, usuario.getLogin());
+					pst.setString(3, usuario.getSenha());
+					pst.setBoolean(4, usuario.isAdm());
 				} catch (SQLException i) {
 					new DAOException(EErrosDAO.INSERE_DADO, i.getMessage(), this.getClass());
-					falhados.add(Usuario);
+					falhados.add(usuario);
 				}
 			}
 		} catch (Exception e) {
@@ -177,6 +199,7 @@ public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
 	}
 
 	@Override
+	
 	public boolean insereVariosTransacao(List<Usuario> objetos) throws ConexaoException, DAOException {
 		Connection conexao = Conexao.abreConexao();
 		try {
@@ -184,10 +207,10 @@ public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
 //			Savepoint sp =  conexao.setSavepoint();
 			PreparedStatement pst = conexao.prepareStatement(
 					"INSERT INTO usuario (prateleira,corredor,sala) VALUES (?, ?, ?);");
-			for (Usuario Usuario : objetos) {
-				pst.setString(1, Usuario.getPrateleira());
-				pst.setString(2, Usuario.getCorredor());
-				pst.setString(3, Usuario.getSala());
+			for (Usuario usuario : objetos) {
+				pst.setString(1, usuario.getLogin());
+				pst.setString(2, usuario.getSenha());
+				pst.setBoolean(3, usuario.isAdm());
 					pst.executeUpdate();
 			}
 			conexao.commit();
@@ -208,10 +231,10 @@ public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
 	public boolean altera(Usuario objeto) throws ConexaoException, DAOException {
 		Connection conexao = Conexao.abreConexao();
 		try {
-			PreparedStatement pst = conexao.prepareStatement("UPDATE usuario SET Prateleira = ?, Corredor = ?, Sala = ? WHERE IdFuncionario = ?;");
-			pst.setString(1, objeto.getPrateleira());
-			pst.setString(2, objeto.getCorredor());
-			pst.setString(3, objeto.getSala());
+			PreparedStatement pst = conexao.prepareStatement("UPDATE usuario SET login = ?, senha = ?, adm = ? WHERE IdFuncionario = ?;");
+			pst.setString(1, objeto.getLogin());
+			pst.setString(2, objeto.getSenha());
+			pst.setBoolean(3, objeto.isAdm());
 			pst.setInt(4, objeto.getIdFuncionario());
 			return pst.executeUpdate() > 0;
 		} catch (Exception e) {
@@ -239,4 +262,6 @@ public class UsuarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Usuario> {
 	public boolean exclui(Usuario objeto) throws ConexaoException, DAOException {
 		return exclui(objeto.getIdFuncionario());
 	}
+
+	
 }

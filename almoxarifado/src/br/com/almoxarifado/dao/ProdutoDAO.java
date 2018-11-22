@@ -5,7 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +22,8 @@ import br.com.almoxarifado.model.Produto;
 import br.com.almoxarifado.utils.Conexao;
 
 public class ProdutoDAO implements IInstalaDAO, ICRUDPadraoDAO<Produto> {
-
+	public static DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	static Date data = new Date();
 	@Override
 	public boolean criaTabela() throws ConexaoException, DAOException {
 		Connection conexao = Conexao.abreConexao();
@@ -60,9 +64,9 @@ public class ProdutoDAO implements IInstalaDAO, ICRUDPadraoDAO<Produto> {
 			ResultSet rs = pst.executeQuery();
 			return rs.first() ? new Produto(rs.getInt("idProduto"),
 					   rs.getString("Nome"),
-					   rs.getDate("dataEntrada").toLocalDate(),
-					   rs.getDate("dataSaida").toLocalDate(),
-					   rs.getDate("Validade").toLocalDate(),
+					   rs.getString("dataEntrada"),
+					   rs.getString("dataSaida"),
+					   rs.getString("Validade"),
 					   rs.getString("Tipo"),
 					   rs.getInt("idLocal"),
 					   rs.getFloat("Valor"))
@@ -84,9 +88,9 @@ public class ProdutoDAO implements IInstalaDAO, ICRUDPadraoDAO<Produto> {
 			while(rs.next()) {
 				Produtos.put(Integer.valueOf(rs.getInt("idProduto")), new Produto(rs.getInt("idProduto"),
 						   rs.getString("Nome"),
-						   rs.getDate("dataEntrada").toLocalDate(),
-						   rs.getDate("dataSaida").toLocalDate(),
-						   rs.getDate("Validade").toLocalDate(),
+						   rs.getString("dataEntrada"),
+						   rs.getString("dataSaida"),
+						   rs.getString("Validade"),
 						   rs.getString("Tipo"),
 						   rs.getInt("idLocal"),
 						   rs.getFloat("Valor")));
@@ -97,6 +101,31 @@ public class ProdutoDAO implements IInstalaDAO, ICRUDPadraoDAO<Produto> {
 		} finally {
 			Conexao.fechaConexao();
 		}
+		
+	}
+	public Map<Integer, Produto> consultaTodosQueEstaoNoEstoque() throws ConexaoException, DAOException {
+		Connection conexao = Conexao.abreConexao();
+		Map<Integer, Produto> Produtos = new HashMap<Integer, Produto>();
+		try {
+			Statement st = conexao.createStatement();
+			ResultSet rs = st.executeQuery("SELECT * FROM Produto WHERE dataSaida is null;");
+			while(rs.next()) {
+				Produtos.put(Integer.valueOf(rs.getInt("idProduto")), new Produto(rs.getInt("idProduto"),
+						   rs.getString("Nome"),
+						   rs.getString("dataEntrada"),
+						   rs.getString("dataSaida"),
+						   rs.getString("Validade"),
+						   rs.getString("Tipo"),
+						   rs.getInt("idLocal"),
+						   rs.getFloat("Valor")));
+			}
+			return Produtos;
+		} catch (Exception e) {
+			throw new DAOException(EErrosDAO.CONSULTA_DADO, e.getMessage(), this.getClass());
+		} finally {
+			Conexao.fechaConexao();
+		}
+		
 	}
 
 	@Override
@@ -112,9 +141,9 @@ public class ProdutoDAO implements IInstalaDAO, ICRUDPadraoDAO<Produto> {
 					if (rs.first()) {
 						Produtos.add(new Produto(rs.getInt("idProduto"),
 										   rs.getString("Nome"),
-										   rs.getDate("dataEntrada").toLocalDate(),
-										   rs.getDate("dataSaida").toLocalDate(),
-										   rs.getDate("Validade").toLocalDate(),
+										   rs.getString("dataEntrada"),
+										   rs.getString("dataSaida"),
+										   rs.getString("Validade"),
 										   rs.getString("Tipo"),
 										   rs.getInt("idLocal"),
 										   rs.getFloat("Valor")));
@@ -131,21 +160,46 @@ public class ProdutoDAO implements IInstalaDAO, ICRUDPadraoDAO<Produto> {
 		}
 		return Produtos;
 	}
+	public Map<Integer, Produto> consultaID(int produto) throws ConexaoException, DAOException {
+		Connection conexao = Conexao.abreConexao();
+		Map<Integer, Produto> Produtos = new HashMap<Integer, Produto>();
+		try {
+			Statement st = conexao.createStatement();
+			ResultSet rs = st.executeQuery("SELECT * FROM produto where idProduto = ?;");
+			while(rs.next()) {
+				Produtos.put(rs.getInt("idProduto"), new Produto(rs.getInt("idProduto"),
+						   rs.getString("Nome"),
+						   rs.getString("dataEntrada"),
+						   rs.getString("dataSaida"),
+						   rs.getString("Validade"),
+						   rs.getString("Tipo"),
+						   rs.getInt("idLocal"),
+						   rs.getFloat("Valor")));
+			
+			}
+			return Produtos;
+		} catch (Exception e) {
+			throw new DAOException(EErrosDAO.CONSULTA_DADO, e.getMessage(), this.getClass());
+		} finally {
+			Conexao.fechaConexao();
+		}
+		
+	}
 
 	@Override
 	public boolean insere(Produto objeto) throws ConexaoException, DAOException {
 		Connection conexao = Conexao.abreConexao();
 		try {
 			PreparedStatement pst = conexao.prepareStatement(
-					"INSERT INTO Produto (idProduto, Nome, dataEntrada, dataSaida, Validade, Tipo,idLocal,Valor) VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
-			pst.setInt(1, objeto.getIdProduto());
-			pst.setString(2, objeto.getNome());
-			pst.setDate(3, java.sql.Date.valueOf(objeto.getDataEntrada()));
-			pst.setDate(4, java.sql.Date.valueOf(objeto.getDataSaida()));
-			pst.setDate(5, java.sql.Date.valueOf(objeto.getValidade()));
-			pst.setString(6, objeto.getTipo());
-			pst.setInt(7, objeto.getIdLocal());
-			pst.setFloat(8, objeto.getValor());
+					"INSERT INTO Produto (Nome, dataEntrada, Tipo,idLocal,Valor) VALUES (?, ?, ?, ?, ?);");
+			
+			pst.setString(1, objeto.getNome());
+			pst.setDate(2, java.sql.Date.valueOf(objeto.getDataEntrada()));
+			
+			
+			pst.setString(3, objeto.getTipo());
+			pst.setInt(4, objeto.getIdLocal());
+			pst.setFloat(5, objeto.getValor());
 			return pst.executeUpdate() > 0;
 		} catch (Exception e) {
 			throw new DAOException(EErrosDAO.INSERE_DADO, e.getMessage(), this.getClass());
@@ -246,6 +300,7 @@ public class ProdutoDAO implements IInstalaDAO, ICRUDPadraoDAO<Produto> {
 	@Override
 	public boolean exclui(int idProduto) throws ConexaoException, DAOException {
 		Connection conexao = Conexao.abreConexao();
+		
 		try {
 			PreparedStatement pst = conexao.prepareStatement("DELETE FROM Produto WHERE idProduto = ?;");
 			pst.setInt(1, idProduto);
@@ -256,9 +311,33 @@ public class ProdutoDAO implements IInstalaDAO, ICRUDPadraoDAO<Produto> {
 			Conexao.fechaConexao();
 		}
 	}
+	
+	public boolean alteraDataSaida(Produto produto) throws ConexaoException, DAOException {
+		Connection conexao = Conexao.abreConexao();
+		
+		
+		try {
+			PreparedStatement pst = conexao.prepareStatement("UPDATE Produto set dataSaida = ? where idProduto = ?;");
+					pst.setString(1, sdf.format(data));
+					pst.setInt(2, produto.getIdProduto());
+					return pst.executeUpdate() > 0;
+		} catch  (Exception e) {
+			throw new DAOException(EErrosDAO.ALTERA_DADO, e.getMessage(), this.getClass());
+		} finally {
+			Conexao.fechaConexao();
+		}
+		
+	}
 
 	@Override
 	public boolean exclui(Produto objeto) throws ConexaoException, DAOException {
 		return exclui(objeto.getIdProduto());
 	}
+
+	@Override
+	public Produto consulta(String parametro, String valor) throws ConexaoException, DAOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

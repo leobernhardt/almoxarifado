@@ -161,6 +161,13 @@ public class FuncionarioDAO implements IInstalaDAO, ICRUDPadraoDAO<Funcionario> 
 		return false;
 	}
 
+	@Override
+	public Funcionario consulta(String parametro, String valor) throws ConexaoException, DAOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 //	@Override
 //	public List<Funcionario> consultaFaixa(int ... codigos) throws ConexaoException, DAOException {
 //		Connection conexao = Conexao.abreConexao();

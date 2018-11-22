@@ -64,7 +64,8 @@ public class LocalDAO implements IInstalaDAO, ICRUDPadraoDAO<Local> {
 			return rs.first() ? new Local(rs.getInt("idLocal"),
 					   rs.getString("prateleira"),
 					   rs.getString("corredor"),
-					   rs.getString("sala"))
+					   rs.getString("sala"),
+					   rs.getBoolean("usado"))
 					 		  : null;
 		} catch (Exception e) {
 			throw new DAOException(EErrosDAO.CONSULTA_DADO, e.getMessage(), this.getClass());
@@ -84,7 +85,29 @@ public class LocalDAO implements IInstalaDAO, ICRUDPadraoDAO<Local> {
 				local.put(Integer.valueOf(rs.getInt("IdLocal")), new Local(rs.getInt("idLocal"),
 						rs.getString("prateleira"),
 						   rs.getString("corredor"),
-						   rs.getString("sala")));
+						   rs.getString("sala"),
+						   rs.getBoolean("usado")));
+			}
+			return local;
+		} catch (Exception e) {
+			throw new DAOException(EErrosDAO.CONSULTA_DADO, e.getMessage(), this.getClass());
+		} finally {
+			Conexao.fechaConexao();
+		}
+	}
+	
+	public Map<Integer, Local> consultaTodosVazio() throws ConexaoException, DAOException {
+		Connection conexao = Conexao.abreConexao();
+		Map<Integer, Local> local = new HashMap<Integer, Local>();
+		try {
+			Statement st = conexao.createStatement();
+			ResultSet rs = st.executeQuery("SELECT * FROM local where usado = 0;");
+			while(rs.next()) {
+				local.put(Integer.valueOf(rs.getInt("IdLocal")), new Local(rs.getInt("idLocal"),
+						rs.getString("prateleira"),
+						   rs.getString("corredor"),
+						   rs.getString("sala"),
+						   rs.getBoolean("usado")));
 			}
 			return local;
 		} catch (Exception e) {
@@ -108,7 +131,8 @@ public class LocalDAO implements IInstalaDAO, ICRUDPadraoDAO<Local> {
 						local.add(new Local(rs.getInt("idLocal"),
 								rs.getString("prateleira"),
 								   rs.getString("corredor"),
-								   rs.getString("sala")));
+								   rs.getString("sala"),
+								   rs.getBoolean("usado")));
 										
 					}
 				} catch (Exception c) {
@@ -132,6 +156,36 @@ public class LocalDAO implements IInstalaDAO, ICRUDPadraoDAO<Local> {
 			pst.setString(1, objeto.getPrateleira());
 			pst.setString(2, objeto.getCorredor());
 			pst.setString(3, objeto.getSala());
+			return pst.executeUpdate() > 0;
+		} catch (Exception e) {
+			throw new DAOException(EErrosDAO.INSERE_DADO, e.getMessage(), this.getClass());
+		} finally {
+			Conexao.fechaConexao();
+		}
+	}
+	public boolean atualizaUsado(int local) throws ConexaoException, DAOException {
+		Connection conexao = Conexao.abreConexao();
+		try {
+			PreparedStatement pst = conexao.prepareStatement(
+					"UPDATE local SET usado = 1 where idlocal = ?;");
+			pst.setInt(1, local);
+			
+			
+			return pst.executeUpdate() > 0;
+		} catch (Exception e) {
+			throw new DAOException(EErrosDAO.INSERE_DADO, e.getMessage(), this.getClass());
+		} finally {
+			Conexao.fechaConexao();
+		}
+	}
+	public boolean atualizaVazio(int local) throws ConexaoException, DAOException {
+		Connection conexao = Conexao.abreConexao();
+		try {
+			PreparedStatement pst = conexao.prepareStatement(
+					"UPDATE local SET usado = 0 where idlocal = ?;");
+			pst.setInt(1, local);
+			
+			
 			return pst.executeUpdate() > 0;
 		} catch (Exception e) {
 			throw new DAOException(EErrosDAO.INSERE_DADO, e.getMessage(), this.getClass());
@@ -233,4 +287,11 @@ public class LocalDAO implements IInstalaDAO, ICRUDPadraoDAO<Local> {
 	public boolean exclui(Local objeto) throws ConexaoException, DAOException {
 		return exclui(objeto.getIdLocal());
 	}
+
+	@Override
+	public Local consulta(String parametro, String valor) throws ConexaoException, DAOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
